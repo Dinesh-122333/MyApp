@@ -6,6 +6,7 @@ interface MediaContextType {
     localAssets: MediaLibrary.Asset[];
     loading: boolean;
     loadAsset: () => void;
+    getAssetByid: (id: string) => MediaLibrary.Asset | undefined;
   }
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
 
@@ -44,8 +45,10 @@ export function MediaContextProvider({children}: PropsWithChildren){
         setendCursor(assetPage.endCursor);
         setLoading(false);
       };
-
-    return <MediaContext.Provider value={{ localAssets, loading, loadAsset }}>{children}</MediaContext.Provider>   
+      const getAssetByid = (id: string) => {
+        return localAssets.find((asset) => asset.id === id);
+      }
+    return <MediaContext.Provider value={{ localAssets, loading, loadAsset, getAssetByid }}>{children}</MediaContext.Provider>   
 }
 
 export const useMedia = () => {
