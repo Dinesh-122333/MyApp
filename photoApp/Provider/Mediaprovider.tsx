@@ -31,20 +31,25 @@ export function MediaContextProvider({children}: PropsWithChildren){
         }
       }, [permissionResponse]);
     
+      let isFetching = false;
+
       const loadAsset = async () => {
-        if (loading || !hasnextPage){
-          return;
-        }
-    
+        if (loading || isFetching || !hasnextPage) return;
+        isFetching = true;
+
         setLoading(true);
-        const assetPage = await MediaLibrary.getAssetsAsync({after: endCursor}); // FIXED here
+        const assetPage = await MediaLibrary.getAssetsAsync({ after: endCursor });
+
         console.log(JSON.stringify(assetPage, null, 2));
-    
-        setlocalAssets((existingitem) => [...existingitem, ...assetPage.assets]);
+        setlocalAssets((prev) => [...prev, ...assetPage.assets]);
         sethasnextPage(assetPage.hasNextPage);
         setendCursor(assetPage.endCursor);
         setLoading(false);
+
+        isFetching = false;
       };
+
+
       const getAssetByid = (id: string) => {
         return localAssets.find((asset) => asset.id === id);
       }
