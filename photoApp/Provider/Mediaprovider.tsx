@@ -1,12 +1,17 @@
 import { PropsWithChildren, createContext, useContext, useState, useEffect } from "react";
 import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+import {decode} from 'base64-arraybuffer'
 import {  } from "react";
+import { supabase } from "@/utils/supabase";
+import { useAuth } from "./Authprovider";
 
 interface MediaContextType {
     localAssets: MediaLibrary.Asset[];
     loading: boolean;
     loadAsset: () => void;
     getAssetByid: (id: string) => MediaLibrary.Asset | undefined;
+    syncToCloud: (asset: MediaLibrary.Asset) => Promise<void>;
   }
 const MediaContext = createContext<MediaContextType | undefined>(undefined);
 
@@ -17,6 +22,8 @@ export function MediaContextProvider({children}: PropsWithChildren){
       const [hasnextPage, sethasnextPage] = useState(true);
       const[endCursor, setendCursor] = useState<string>();
       const[loading, setLoading] = useState(false);
+
+      const {user} = useAuth();
     
       const[localAssets, setlocalAssets] = useState<MediaLibrary.Asset[]>([]);
       useEffect(() => {
@@ -53,7 +60,30 @@ export function MediaContextProvider({children}: PropsWithChildren){
       const getAssetByid = (id: string) => {
         return localAssets.find((asset) => asset.id === id);
       }
-    return <MediaContext.Provider value={{ localAssets, loading, loadAsset, getAssetByid }}>{children}</MediaContext.Provider>   
+
+      const syncToCloud = async (asset: MediaLibrary.Asset) => {
+        console.warn("Syncing...", asset);
+        const info = await MediaLibrary.getAssetInfoAsync(asset);
+        // console.log(JSON.stringify(info, null, 2));
+        // console.log(info.localUri);
+        if (!info.localUri || !user){
+          return;
+        }
+        const base64String = await FileSystem.readAsStringAsync(info.localUri, {encoding: 'base64'});
+        // console.log(base64String);
+
+        const extension = asset.filename.split('.').pop()?.toLowerCase();
+        const arrayBuffer = decode(base64String);
+        const {data, error} = await supabase.storage
+          .from ('assets')
+          .upload(`${user?.id}/${asset.filename}`, arrayBuffer,{
+            contentType: `image/${extension}`,
+            upsert: true, 
+          });
+        console.log(data, error);
+        
+      }
+    return <MediaContext.Provider value={{ localAssets, loading, loadAsset, getAssetByid, syncToCloud }}>{children}</MediaContext.Provider>   
 }
 
 export const useMedia = () => {
@@ -63,4 +93,8 @@ export const useMedia = () => {
     }
     return context;
   };
+
+function lookup(filename: string): string | undefined {
+  throw new Error("Function not implemented.");
+}
   

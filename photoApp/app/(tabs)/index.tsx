@@ -17,7 +17,7 @@ function handleSignOut() {
 }
 export default function HomeScreen() {
   const { localAssets, loading, loadAsset } = useMedia();
-  console.log(loading);
+  // console.log(loading);
 
   useEffect(() => {
     loadAsset();
