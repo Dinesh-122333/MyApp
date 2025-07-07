@@ -4,6 +4,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { Image } from "expo-image";
 import { useState, useRef } from "react";
 import Entypo from "@expo/vector-icons/Entypo";
+import { getImagekitUrlFromPath } from "@/utils/ImageKit";
 
 const { width, height } = Dimensions.get("window");
 
@@ -27,6 +28,8 @@ export default function AssetPage() {
   };
 
   const currentAsset = localAssets[currentIndex];
+
+  const uri = getImagekitUrlFromPath('6f3238b7-f354-4879-8117-4ed372da1b1a/IMG_20220526_115435.jpg', [])
 
   return (
     <>

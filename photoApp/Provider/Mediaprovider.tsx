@@ -80,6 +80,7 @@ export function MediaContextProvider({children}: PropsWithChildren){
             contentType: `image/${extension}`,
             upsert: true, 
           });
+        // console.log(arrayBuffer);
         console.log(data, error);
         
       }
